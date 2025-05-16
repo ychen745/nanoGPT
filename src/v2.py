@@ -188,7 +188,7 @@ class BigramLanguageModel(nn.Module):
             idx = torch.cat((idx, idx_next), dim=1)
         return idx
 
-model = BigramLanguageModel()
+model = BigramLanguageModel().to(device)
 
 idx = torch.zeros((1, 1), dtype=torch.long)
 
