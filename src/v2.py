@@ -6,11 +6,15 @@ from torch.nn import functional as F
 
 input_file = '../data/input.txt'
 
+training = True
+
 batch_size = 64
 block_size = 256
 max_iters = 5000
 eval_interval = 500
 eval_iters = 200
+save_interval = 500
+save_dir = '../checkpoints'
 n_embed = 384
 n_head = 6
 n_layer = 6
@@ -195,18 +199,23 @@ idx = torch.zeros((1, 1), dtype=torch.long)
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
 batch_size = 32
 
-for iter in range(max_iters):
+if not training:
+    model.load_state_dict(os.path.join(save_dir, 'v2.pth'))
+else:
+    for iter in range(max_iters):
 
-    if iter % eval_interval == 0:
-        losses = estimate_loss()
-        print(f"step {iter}: train loss: {losses['train']:.4f}, val loss: {losses['val']:.4f}")
-    
-    # sample a batch of data
-    xb, yb = get_batch('train')
-    logits, loss = model(xb, yb)
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
+        if iter % eval_interval == 0:
+            losses = estimate_loss()
+            print(f"step {iter}: train loss: {losses['train']:.4f}, val loss: {losses['val']:.4f}")
+        
+        # sample a batch of data
+        xb, yb = get_batch('train')
+        logits, loss = model(xb, yb)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    torch.save(model.state_dict(), os.path.join(save_dir, 'v2.pth'))
 
 # print(loss.item())
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
