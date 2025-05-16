@@ -1,10 +1,11 @@
 import os
 import shutil
 import torch
+import time
 import torch.nn as nn
 from torch.nn import functional as F
 
-input_file = '/content/drive/MyDrive/nanoGPT/data/input.txt'
+input_file = '../data/input.txt'
 
 batch_size = 32
 block_size = 8
@@ -105,13 +106,14 @@ class BigramLanguageModel(nn.Module):
             idx = torch.cat((idx, idx_next), dim=1)
         return idx
 
-model = BigramLanguageModel(vocab_size)
+model = BigramLanguageModel(vocab_size).to(device)
 
 idx = torch.zeros((1, 1), dtype=torch.long)
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
 batch_size = 32
 
+start_time = time.time()
 for iter in range(max_iters):
 
     if iter % eval_interval == 0:
@@ -128,3 +130,4 @@ for iter in range(max_iters):
 # print(loss.item())
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 print(decode(model.generate(context, max_new_tokens=500)[0].tolist()))
+print(f"training time: {time.time() - start_time} seconds")
